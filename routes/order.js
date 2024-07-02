@@ -1,17 +1,77 @@
 const Order = require("./../models/order");
-const verifyToken= require("./verifyToken");
-const router = require('express').Router();
+const products = require("./../models/products");
 const asyncHandler = require('express-async-handler');
 const ApiError = require("./../utils/apiError");
+const authService = require('./ath');
+const verifyToken= require("./verifyToken");
+const router = require('express').Router();
 
+
+
+const calcTotalCartPrice = (Order) => {
+    let totalprice = 0;
+    Order.orderItems.forEach((item) => {
+       totalprice += item.quantity * item.price;
+     });
+     Order.totalPrice = totalprice;
+    return totalprice;
+  };
 
 //create  
-router.post("/",verifyToken.verifyToken,asyncHandler(async(req,res)=>{
-const newOrder= new Order(req.body);
-    const savedOrder=await newOrder.save();
-    res.status(200).json({data:savedOrder});
+router.post("/", /*authService.allowedTo('user')verifyToken.verifyTokenAndAuthorization,*/
 
-}));
+asyncHandler(async (req, res, next) => {
+    const {productId,productColor}=req.body;
+    const product=await products.findById(productId);
+  
+    // 1) Get Cart for logged user
+    let cart = await Order.findOne({ client:req.client._id });
+  
+    if (!cart) {
+      // create cart fot logged user with product
+      cart = await Order.create({
+        client:req.client._id,
+        orderItems:[{product:productId,color:productColor,price:product.productPrice}]
+      });
+    } else {
+      // product exist in cart, update product quantity
+      const productIndex = cart.orderItems.findIndex(
+        (item) => item.product.toString() === productId && item.color === productColor
+      );
+  
+      if (productIndex > -1) {
+        const cartItem = cart.orderItems[productIndex];
+        cartItem.quantity += 1;
+  
+        cart.cartItems[productIndex] = cartItem;
+      } else {
+        // product not exist in cart,  push product to cartItems array
+        cart.cartItems.push({ product:productId,color:productColor,price:product.productPrice });
+      }
+    }
+  
+    // Calculate total cart price
+    calcTotalCartPrice(order);
+    await cart.save();
+  
+    res.status(200).json({
+      status: 'success',
+      message: 'Product added to cart successfully',
+      numOfCartItems: cart.cartItems.length,
+      data: cart,
+    });
+  }));
+
+
+
+
+
+    
+
+
+
+
+
 
 //update
 
@@ -25,7 +85,11 @@ asyncHandler(async (req,res,next) => {
 
         if (!updatedOrder){
                 return  next(new ApiError (`no order for this id: ${req.params.id}`));
-            }
+            };
+            const clientid= clients.findById(req.body.clientId);
+            if (!clientid){
+                return  next(new ApiError (`no section for this id: ${req.body.clientId}`));
+            };    
         res.status(200).json({data:updatedOrder});
     
 

@@ -44,7 +44,7 @@ asyncHandler(async (req,res,next) => {
 
 //get report
 
-router.get("/find/:id",verifyToken.verifyTokenAndAuthorization,asyncHandler(async (req,res,next) => {
+router.get("/find/:id",verifyToken.verifyTokenAndManager||verifyToken.verifyTokenAndAuthorization,asyncHandler(async (req,res,next) => {
     
     const report= await Reports.findById(req.params.id);
     if(!report){
@@ -57,7 +57,7 @@ router.get("/find/:id",verifyToken.verifyTokenAndAuthorization,asyncHandler(asyn
 
 //get all reports
 
-router.get("/",verifyToken.verifyTokenAndManager,asyncHandler(async (req,res) => {
+router.get("/",verifyToken.verifyTokenAndManager||verifyToken.verifyTokenAndAuthorization,asyncHandler(async (req,res) => {
     const qNew =req.query.new;
     const page=req.query.page * 1 || 1;
     const limit =req.query.limit * 1 || 5 ;

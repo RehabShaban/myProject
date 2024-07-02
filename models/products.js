@@ -22,11 +22,11 @@ const productSchema= new mongoose.Schema(
         },
         //productImages:[String],
         
-        sections:{type:Array},
-        //     type:mongoose.Schema.ObjectId,
-        //     ref:"Section",
-        //     //required:true
-        // }],
+        sections:{
+    type:mongoose.Schema.ObjectId,
+            ref:"Section",
+        // required:true
+    },
         
         inStock:{
             type:Boolean,
@@ -43,19 +43,15 @@ const productSchema= new mongoose.Schema(
             type:Number,
             required:true
         },
-    /* designerId:{
-            type:mongoose.Schema.ObjectId,
-            ref:"Designer",
-            //required:true,            
-        },*/
-        /*productsSold:{
+
+        Sold:{
             type:Number,
             default:0,
         },
         productRating:{
             type:Number,
             
-        }, */
+        }, 
      
     },
       {timestamps:true}

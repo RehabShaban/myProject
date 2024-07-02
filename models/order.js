@@ -1,31 +1,35 @@
 const mongoose= require('mongoose');
 const orderSchema =new mongoose.Schema(
     {
-    clientId:{
-        type:String,
-        required:true,
-    },
-
-    products: [
+    
+    orderItems: [
         {
-        productId:{ 
-            type:String
-            
+        product:{ 
+            type:mongoose.Schema.ObjectId,
+            ref:"products",            
         },
         quantity:{
-                type:Number,
-                default:1
-            }
+            type:Number,
+            default:1
+        },
+        color:String,
+        price:Number,              
+            
         },
 
     ],
-    
+    client:{
+        type:mongoose.Schema.ObjectId,
+            ref:"client",
+    },
+
     totalPrice:{
         type:Number,
-        require:true,
+       // require:true,
         default:0
     },
-    address:{type:Object,required:true},
+
+    address:{type:String},
     status:{
         type:String,
         default:"pending"

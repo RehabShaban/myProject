@@ -38,8 +38,19 @@ const designerSchema=new mongoose.Schema(
         },
         isManager:{
             type:Boolean,
-            default:false}
-    
+            default:false},
+
+     designs: [
+        {
+        designId:{ 
+            type:mongoose.Schema.ObjectId,
+            ref:"design"
+            
+        },
+        designImage:{
+            type:mongoose.Schema.ObjectId,
+            ref:"designimage"
+        },}],
     },
     {timestamps:true}
 );

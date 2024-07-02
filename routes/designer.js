@@ -1,4 +1,5 @@
-const Client = require("./../models/client");
+const Designer = require("./../models/designer");
+const design= require("./../models/design");
 const verifyToken= require("./verifyToken");
 const CryptoJS = require("crypto-js");
 const asyncHandler = require('express-async-handler');
@@ -7,21 +8,21 @@ const router = require('express').Router();
 
 //update
 
-router.put("/:id",verifyToken.verifyTokenAndAuthorization,
+router.put("/:id",verifyToken.verifyTokenAndAuthorization&&verifyToken.verifyTokenAndDesigner,
 asyncHandler(async (req,res,next) => {
-    if(req.body.clientPassword){
-        req.body.clientPassword=CryptoJS.AES.encrypt(
-            req.body.clientPassword,
+    if(req.body.designerPassword){
+        req.body.designerPassword=CryptoJS.AES.encrypt(
+            req.body.designerPassword,
             process.env.PASS_SEC 
             ).toString();
     }
     
-        const updatedClient=await Client.findByIdAndUpdate(req.params.id,
+        const updatedDesigner=await Designer.findByIdAndUpdate(req.params.id,
             {
             $set:req.body
         },{new:true});
 
-        if (!updatedClient){
+        if (!updatedDesigner){
             return  next(new ApiError (`no client for this id: ${req.params.id}`));
             }
         res.status(200).json({data:updatedClient});
@@ -31,14 +32,14 @@ asyncHandler(async (req,res,next) => {
 
 //delete
 
-router.delete("/:id",verifyToken.verifyTokenAndAuthorization,
+router.delete("/:id",verifyToken.verifyTokenAndAuthorization&&verifyToken.verifyTokenAndDesigner,
 asyncHandler(async (req,res,next) => {
 
-    const client= await Client.findByIdAndDelete(req.params.id);
-    if(!client){
-        return  next(new ApiError (`no client for this id: ${req.params.id}`));
+    const designer= await Designer.findByIdAndDelete(req.params.id);
+    if(!designer){
+        return  next(new ApiError (`no Designer for this id: ${req.params.id}`));
         }
-    res.status(200).json("client has been deleted");
+    res.status(200).json("Designer has been deleted");
     
 
 }));
@@ -48,11 +49,11 @@ asyncHandler(async (req,res,next) => {
 router.get("/find/:id",verifyToken.verifyTokenAndManager,
 asyncHandler(async (req,res,next) => {
 
-    const client= await Client.findById(req.params.id);
+    const designer= await Designer.findById(req.params.id);
         //////////////?????//
-    const {clientPassword, ...others}=client._doc;
+    const {designerPassword, ...others}=Designer._doc;
     
-    if (!client){
+    if (!designer){
         return next(new ApiError (`no client for this id: ${req.params.id}`));
     }
     res.status(200).json({others});
@@ -68,10 +69,10 @@ asyncHandler(async (req,res) => {
     const query =req.query.new;
    
 
-    const clients= query
-    ? await Client.find().sort({_id:-1}).limit(5)
-    : await Client.find();
-        res.status(200).json({results:clients.length,data:clients});    
+    const designer= query
+    ? await Designer.find().sort({_id:-1}).limit(5)
+    : await Designer.find();
+        res.status(200).json({results:Designer.length,data:designer});    
 
 }));
 
@@ -85,7 +86,7 @@ asyncHandler(async (req,res) =>{
 
     
         // collection data in month (aggregate)
-        const data = await Client.aggregate([
+        const data = await Designer.aggregate([
         //comparison my data in createat in database graetthan last year
         {$match:{createdAt:{$gte:lastYear}}},
         //take month number  variable = set month number inside my created

@@ -5,8 +5,44 @@ const asyncHandler = require('express-async-handler');
 const ApiError = require("./../utils/apiError");
 
 
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const sharp = require('sharp');
+
+
+
+const multerStorage = multer.memoryStorage()
+
+
+const multerFilter =function (req, file, cb) {
+    if (file.mimetype.split('/')[0]=="image") {
+        cb(null, true);
+    } else {
+        cb(new ApiError('Only images are allowed',400),false);
+}
+};
+
+
+const upload = multer({ storage: multerStorage , fileFilter :multerFilter});
+
+
+const resizeImage= asyncHandler(async (req,res,next) => {
+
+const fileName =`section-${uuidv4()}-${Date.now()}.jpeg`;
+await sharp(req.file.buffer)
+.resize(400, 400)
+.toFormat("jpeg")
+.jpeg({quality:90})
+.toFile(`uploads/sections/${fileName}`);
+
+req.body.sectionImage=req.hostname+fileName;
+next();
+});
+
+
 //create  
-router.post("/",verifyToken.verifyTokenAndManager,
+router.post("/",upload.single('sectionImage'),resizeImage
+,verifyToken.verifyTokenAndManager,
 asyncHandler(async(req,res)=>{
     
     const newSection= new Sections(req.body)
@@ -16,7 +52,8 @@ asyncHandler(async(req,res)=>{
 
 // //update
 
-router.put("/:id",verifyToken.verifyTokenAndManager,
+router.put("/:id",upload.single('sectionImage'),resizeImage
+,verifyToken.verifyTokenAndManager,
 asyncHandler(async (req,res,next) => {
 
             const updatedSections=await Sections.findByIdAndUpdate(req.params.id,

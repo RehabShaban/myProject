@@ -6,13 +6,13 @@ const SectionsSchema = new mongoose.Schema({
         type:String,
         required:true,
         unique:true,
-    },
+    }, 
     sectionImage:{
         type:String,
-       //
+      //  required:true
     },
     /*slug:{
-        type:String,
+        type: String,
         lowercase:true
     }*/
     
